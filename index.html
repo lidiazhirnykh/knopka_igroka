@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Москва-Сити: ЭКСТРА раунд</title>
+<title>ЭКСТРА — Кто первый?</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  
   body {
     font-family: 'Montserrat', sans-serif;
     background: linear-gradient(135deg, #0a0e1a 0%, #1a2332 100%);
@@ -18,28 +17,8 @@
     align-items: center;
     padding: 20px;
     color: #c0c8d0;
-    overflow: hidden;
-    position: relative;
   }
-  
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: 
-      radial-gradient(ellipse at top, rgba(255, 215, 0, 0.1) 0%, transparent 60%),
-      radial-gradient(ellipse at bottom, rgba(74, 158, 255, 0.08) 0%, transparent 60%);
-    pointer-events: none;
-  }
-  
-  .container {
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-  }
-  
+  .container { max-width: 500px; width: 100%; text-align: center; }
   .badge {
     display: inline-block;
     padding: 6px 20px;
@@ -52,7 +31,6 @@
     text-transform: uppercase;
     margin-bottom: 20px;
   }
-  
   .title {
     font-family: 'Oswald', sans-serif;
     font-size: 48px;
@@ -60,19 +38,11 @@
     background: linear-gradient(180deg, #ffd700 0%, #b8941f 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-clip: text;
     letter-spacing: 4px;
     text-transform: uppercase;
     margin-bottom: 10px;
   }
-  
-  .subtitle {
-    font-size: 16px;
-    color: #8a95a3;
-    letter-spacing: 2px;
-    margin-bottom: 40px;
-  }
-  
+  .subtitle { font-size: 16px; color: #8a95a3; letter-spacing: 2px; margin-bottom: 40px; }
   .name-input {
     width: 100%;
     padding: 18px 25px;
@@ -84,20 +54,9 @@
     font-size: 18px;
     text-align: center;
     margin-bottom: 25px;
-    transition: all 0.3s;
   }
-  
-  .name-input:focus {
-    outline: none;
-    border-color: #ffd700;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-  }
-  
-  .name-input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  
+  .name-input:focus { outline: none; border-color: #ffd700; box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); }
+  .name-input:disabled { opacity: 0.5; }
   .answer-btn {
     width: 100%;
     padding: 30px;
@@ -111,42 +70,14 @@
     border: 3px solid #ffd700;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 
-      0 0 40px rgba(255, 215, 0, 0.4),
-      inset 0 0 20px rgba(255, 255, 255, 0.2);
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
   }
-  
-  .answer-btn:hover:not(:disabled) {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 
-      0 15px 50px rgba(255, 215, 0, 0.6),
-      inset 0 0 20px rgba(255, 255, 255, 0.3);
-  }
-  
-  .answer-btn:active:not(:disabled) {
-    transform: translateY(0) scale(0.98);
-  }
-  
   .answer-btn:disabled {
     background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     border-color: #4a5568;
     color: #8a95a3;
     cursor: not-allowed;
-    box-shadow: none;
   }
-  
-  .answer-btn.pressed {
-    animation: pulse 1s infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 40px rgba(82, 183, 136, 0.6); }
-    50% { box-shadow: 0 0 60px rgba(82, 183, 136, 0.9); }
-  }
-  
   .status {
     margin-top: 30px;
     padding: 20px;
@@ -158,49 +89,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-direction: column;
+    gap: 10px;
   }
-  
-  .status.success {
-    border-color: #52b788;
-    color: #52b788;
-    background: rgba(82, 183, 136, 0.1);
-  }
-  
-  .status.error {
-    border-color: #e63946;
-    color: #e63946;
-    background: rgba(230, 57, 70, 0.1);
-  }
-  
-  .status.waiting {
-    border-color: #4a9eff;
-    color: #6eb5ff;
-    background: rgba(74, 158, 255, 0.1);
-  }
-  
+  .status.success { border-color: #52b788; color: #52b788; }
+  .status.error { border-color: #e63946; color: #e63946; }
+  .status.waiting { border-color: #4a9eff; color: #6eb5ff; }
   .loader {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
+    width: 20px; height: 20px;
     border: 3px solid rgba(255, 215, 0, 0.3);
     border-radius: 50%;
     border-top-color: #ffd700;
     animation: spin 1s ease-in-out infinite;
-    margin-right: 10px;
   }
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  
-  .hint {
-    margin-top: 30px;
-    font-size: 13px;
-    color: #6a7585;
-    font-style: italic;
-    line-height: 1.5;
-  }
-  
+  @keyframes spin { to { transform: rotate(360deg); } }
   .position-badge {
     display: inline-block;
     padding: 8px 20px;
@@ -210,8 +112,8 @@
     font-family: 'Oswald', sans-serif;
     font-size: 20px;
     letter-spacing: 2px;
-    margin-top: 10px;
   }
+  .hint { margin-top: 30px; font-size: 13px; color: #6a7585; font-style: italic; line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -221,143 +123,90 @@
   <h1 class="title">ЭКСТРА</h1>
   <p class="subtitle">Кто первый нажмёт — тот отвечает!</p>
   
-  <input 
-    type="text" 
-    class="name-input" 
-    id="playerName" 
-    placeholder="Введите ваше ФИО" 
-    maxlength="50"
-    autocomplete="off"
-  >
+  <input type="text" class="name-input" id="playerName" placeholder="Введите ваше ФИО" maxlength="50" autocomplete="off">
   
-  <button class="answer-btn" id="answerBtn" onclick="pressAnswer()">
-    🎯 Ответить
-  </button>
+  <button class="answer-btn" id="answerBtn" onclick="pressAnswer()">🎯 Ответить</button>
   
-  <div class="status" id="status">
-    Введите имя и нажмите кнопку
-  </div>
+  <div class="status" id="status">Введите имя и нажмите кнопку</div>
   
-  <p class="hint">
-    💡 Нажимайте кнопку только когда будете готовы отвечать.<br>
-    Ведущий увидит порядок нажатий и вызовет первого.
-  </p>
+  <p class="hint">💡 Нажимайте кнопку только когда будете готовы отвечать.<br>Ведущий увидит порядок нажатий и вызовет первого.</p>
 </div>
 
 <script>
-// ============ ВАШИ ДАННЫЕ ============
 const BIN_ID = '6a36ad5ef5f4af5e2914a4d3';
-const MASTER_KEY = '$2a$10$gRNT44Y00gMu6UD.V/S1m.jlLCvfoASF103zBbJoStP4Cpc20B4ju';
+const MASTER_KEY = '$2a$10$6R2dE.M6lkeTUg2STMamfeoNXfb8RNdGXEUVV0eEm9Drin2Nd97.2';
 const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
 let isPressed = false;
-let playerName = '';
-
 const nameInput = document.getElementById('playerName');
 const answerBtn = document.getElementById('answerBtn');
 const statusEl = document.getElementById('status');
 
-// Восстановление имени из localStorage
 const savedName = localStorage.getItem('playerName');
-if (savedName) {
-  nameInput.value = savedName;
-}
+if (savedName) nameInput.value = savedName;
 
 nameInput.addEventListener('input', () => {
   localStorage.setItem('playerName', nameInput.value);
 });
 
-// Проверка статуса раунда при загрузке
-window.addEventListener('load', checkRoundStatus);
-
-async function checkRoundStatus() {
-  try {
-    const response = await fetch(`${API_URL}/latest`, {
-      headers: { 'X-Master-Key': MASTER_KEY }
-    });
-    const data = await response.json();
-    const bin = data.record;
-    
-    if (!bin.active) {
-      statusEl.className = 'status waiting';
-      statusEl.innerHTML = '⏳ Ожидание нового вопроса...';
-      answerBtn.disabled = true;
-    }
-  } catch (e) {
-    console.error('Ошибка проверки статуса:', e);
-  }
-}
-
 async function pressAnswer() {
-  playerName = nameInput.value.trim();
+  const playerName = nameInput.value.trim();
   
   if (!playerName) {
     statusEl.className = 'status error';
-    statusEl.textContent = '❌ Введите ваше ФИО!';
+    statusEl.innerHTML = '❌ Введите ваше ФИО!';
     nameInput.focus();
     return;
   }
   
-  if (isPressed) {
-    statusEl.className = 'status error';
-    statusEl.textContent = '⚠️ Вы уже нажали кнопку!';
-    return;
-  }
+  if (isPressed) return;
   
-  // Блокируем кнопку сразу
   isPressed = true;
   answerBtn.disabled = true;
   nameInput.disabled = true;
-  answerBtn.classList.add('pressed');
   statusEl.className = 'status waiting';
-  statusEl.innerHTML = '<span class="loader"></span> Отправка...';
+  statusEl.innerHTML = '<div class="loader"></div> Отправка...';
   
   try {
-    // Получаем текущие данные
     const getResponse = await fetch(`${API_URL}/latest`, {
       headers: { 'X-Master-Key': MASTER_KEY }
     });
+    
+    if (!getResponse.ok) throw new Error('Ошибка подключения к серверу');
+    
     const getData = await getResponse.json();
     const currentData = getData.record;
     
-    // Проверяем, активен ли раунд
+    if (!Array.isArray(currentData.players)) currentData.players = [];
+    
     if (!currentData.active) {
       statusEl.className = 'status error';
-      statusEl.textContent = '⏳ Раунд ещё не начался или уже завершён';
+      statusEl.innerHTML = '⏳ Раунд ещё не начался.<br>Попросите ведущего нажать "Начать приём"';
       isPressed = false;
       answerBtn.disabled = false;
       nameInput.disabled = false;
-      answerBtn.classList.remove('pressed');
       return;
     }
     
-    // Проверяем, не нажимал ли уже этот игрок
     const alreadyPressed = currentData.players.some(
       p => p.name.toLowerCase() === playerName.toLowerCase()
     );
     
     if (alreadyPressed) {
       statusEl.className = 'status error';
-      statusEl.textContent = '⚠️ Вы уже участвуете в этом раунде!';
+      statusEl.innerHTML = '⚠️ Вы уже участвуете в этом раунде!';
       isPressed = false;
       answerBtn.disabled = false;
       nameInput.disabled = false;
-      answerBtn.classList.remove('pressed');
       return;
     }
     
-    // Получаем точное время
-    const serverTime = new Date(getResponse.headers.get('Date')).getTime();
-    const clientTime = Date.now();
-    
-    // Добавляем игрока в список
     currentData.players.push({
       name: playerName,
-      time: serverTime || clientTime,
+      time: Date.now(),
       position: currentData.players.length + 1
     });
     
-    // Обновляем данные в bin
     const updateResponse = await fetch(API_URL, {
       method: 'PUT',
       headers: {
@@ -367,28 +216,18 @@ async function pressAnswer() {
       body: JSON.stringify(currentData)
     });
     
-    if (updateResponse.ok) {
-      const position = currentData.players.length;
-      statusEl.className = 'status success';
-      statusEl.innerHTML = `✅ Вы ${getPositionText(position)}! Ждите вызова.`;
-      
-      const badge = document.createElement('div');
-      badge.className = 'position-badge';
-      badge.textContent = `#${position}`;
-      statusEl.appendChild(badge);
-      
-    } else {
-      throw new Error('Ошибка обновления данных');
-    }
+    if (!updateResponse.ok) throw new Error('Ошибка сохранения');
+    
+    const position = currentData.players.length;
+    statusEl.className = 'status success';
+    statusEl.innerHTML = `✅ Вы ${getPositionText(position)}! Ждите вызова.<div class="position-badge">#${position}</div>`;
     
   } catch (error) {
-    console.error('Ошибка:', error);
     statusEl.className = 'status error';
-    statusEl.textContent = '❌ Ошибка соединения. Попробуйте ещё раз.';
+    statusEl.innerHTML = `❌ Ошибка: ${error.message}`;
     isPressed = false;
     answerBtn.disabled = false;
     nameInput.disabled = false;
-    answerBtn.classList.remove('pressed');
   }
 }
 
@@ -398,9 +237,6 @@ function getPositionText(position) {
   if (position === 3) return 'третий';
   return `${position}-й`;
 }
-
-// Периодическая проверка статуса (каждые 3 сек)
-setInterval(checkRoundStatus, 3000);
 </script>
 
 </body>
