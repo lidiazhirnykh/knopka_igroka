@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ЭКСТРА — Кто первый?</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -12,7 +12,6 @@
     background: linear-gradient(135deg, #0a0e1a 0%, #1a2332 100%);
     min-height: 100vh;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 20px;
@@ -71,12 +70,15 @@
     border-radius: 12px;
     cursor: pointer;
     box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+    transition: all 0.2s;
   }
+  .answer-btn:active:not(:disabled) { transform: scale(0.97); }
   .answer-btn:disabled {
     background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
     border-color: #4a5568;
     color: #8a95a3;
     cursor: not-allowed;
+    box-shadow: none;
   }
   .status {
     margin-top: 30px;
@@ -110,8 +112,9 @@
     border-radius: 20px;
     color: #fff;
     font-family: 'Oswald', sans-serif;
-    font-size: 20px;
+    font-size: 24px;
     letter-spacing: 2px;
+    margin-top: 5px;
   }
   .hint { margin-top: 30px; font-size: 13px; color: #6a7585; font-style: italic; line-height: 1.5; }
 </style>
@@ -127,26 +130,75 @@
   
   <button class="answer-btn" id="answerBtn" onclick="pressAnswer()">🎯 Ответить</button>
   
-  <div class="status" id="status">Введите имя и нажмите кнопку</div>
+  <div class="status" id="status">Проверка подключения...</div>
   
   <p class="hint">💡 Нажимайте кнопку только когда будете готовы отвечать.<br>Ведущий увидит порядок нажатий и вызовет первого.</p>
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
 <script>
-const BIN_ID = '6a36ad5ef5f4af5e2914a4d3';
-const MASTER_KEY = '$2a$10$6R2dE.M6lkeTUg2STMamfeoNXfb8RNdGXEUVV0eEm9Drin2Nd97.2';
-const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+// ============ КОНФИГ FIREBASE ============
+const firebaseConfig = {
+  apiKey: "AIzaSyBsu2Rj8HRw83SEO0zG_7Ev_-jBHJYm-Bs",
+  authDomain: "moscow-city-game1.firebaseapp.com",
+  databaseURL: "https://moscow-city-game1-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "moscow-city-game1",
+  storageBucket: "moscow-city-game1.firebasestorage.app",
+  messagingSenderId: "959754941375",
+  appId: "1:959754941375:web:b3010b388c18d4938c670a"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 let isPressed = false;
+let roundActive = false;
+let myPosition = null;
+
 const nameInput = document.getElementById('playerName');
 const answerBtn = document.getElementById('answerBtn');
 const statusEl = document.getElementById('status');
 
 const savedName = localStorage.getItem('playerName');
 if (savedName) nameInput.value = savedName;
+nameInput.addEventListener('input', () => localStorage.setItem('playerName', nameInput.value));
 
-nameInput.addEventListener('input', () => {
-  localStorage.setItem('playerName', nameInput.value);
+// Слушаем состояние раунда в реальном времени
+db.ref('extraRound').on('value', (snapshot) => {
+  const data = snapshot.val() || {};
+  roundActive = data.active === true;
+  const players = data.players || {};
+  
+  // Проверяем, не нажали ли мы уже (если страница перезагрузилась)
+  const savedName = localStorage.getItem('playerName');
+  if (savedName) {
+    for (const key in players) {
+      if (players[key].name.toLowerCase() === savedName.toLowerCase()) {
+        myPosition = players[key].position;
+        isPressed = true;
+        answerBtn.disabled = true;
+        nameInput.disabled = true;
+        statusEl.className = 'status success';
+        statusEl.innerHTML = `✅ Вы уже нажали! Ваша позиция:<div class="position-badge">#${myPosition}</div>`;
+        return;
+      }
+    }
+  }
+  
+  // Обновляем статус
+  if (!roundActive && !isPressed) {
+    statusEl.className = 'status waiting';
+    statusEl.innerHTML = '⏳ Ожидание нового вопроса...<br><span style="font-size:13px">Попросите ведущего нажать "Начать приём"</span>';
+    answerBtn.disabled = true;
+  } else if (roundActive && !isPressed) {
+    statusEl.className = 'status';
+    statusEl.innerHTML = 'Введите имя и нажмите кнопку';
+    answerBtn.disabled = false;
+    nameInput.disabled = false;
+  }
 });
 
 async function pressAnswer() {
@@ -159,6 +211,12 @@ async function pressAnswer() {
     return;
   }
   
+  if (!roundActive) {
+    statusEl.className = 'status error';
+    statusEl.innerHTML = '⏳ Раунд ещё не начался.<br>Попросите ведущего нажать "Начать приём"';
+    return;
+  }
+  
   if (isPressed) return;
   
   isPressed = true;
@@ -168,61 +226,39 @@ async function pressAnswer() {
   statusEl.innerHTML = '<div class="loader"></div> Отправка...';
   
   try {
-    const getResponse = await fetch(`${API_URL}/latest`, {
-      headers: { 'X-Master-Key': MASTER_KEY }
-    });
+    // Получаем текущих игроков
+    const snapshot = await db.ref('extraRound/players').once('value');
+    const players = snapshot.val() || {};
     
-    if (!getResponse.ok) throw new Error('Ошибка подключения к серверу');
-    
-    const getData = await getResponse.json();
-    const currentData = getData.record;
-    
-    if (!Array.isArray(currentData.players)) currentData.players = [];
-    
-    if (!currentData.active) {
-      statusEl.className = 'status error';
-      statusEl.innerHTML = '⏳ Раунд ещё не начался.<br>Попросите ведущего нажать "Начать приём"';
-      isPressed = false;
-      answerBtn.disabled = false;
-      nameInput.disabled = false;
-      return;
+    // Проверяем, не нажимал ли кто-то с таким же именем
+    for (const key in players) {
+      if (players[key].name.toLowerCase() === playerName.toLowerCase()) {
+        statusEl.className = 'status error';
+        statusEl.innerHTML = '⚠️ Кто-то с таким именем уже нажал!<br>Введите полное ФИО.';
+        isPressed = false;
+        answerBtn.disabled = false;
+        nameInput.disabled = false;
+        return;
+      }
     }
     
-    const alreadyPressed = currentData.players.some(
-      p => p.name.toLowerCase() === playerName.toLowerCase()
-    );
+    // Определяем позицию
+    const position = Object.keys(players).length + 1;
     
-    if (alreadyPressed) {
-      statusEl.className = 'status error';
-      statusEl.innerHTML = '⚠️ Вы уже участвуете в этом раунде!';
-      isPressed = false;
-      answerBtn.disabled = false;
-      nameInput.disabled = false;
-      return;
-    }
-    
-    currentData.players.push({
+    // Записываем в базу
+    const newRef = db.ref('extraRound/players').push();
+    await newRef.set({
       name: playerName,
-      time: Date.now(),
-      position: currentData.players.length + 1
+      time: firebase.database.ServerValue.TIMESTAMP,
+      position: position
     });
     
-    const updateResponse = await fetch(API_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': MASTER_KEY
-      },
-      body: JSON.stringify(currentData)
-    });
-    
-    if (!updateResponse.ok) throw new Error('Ошибка сохранения');
-    
-    const position = currentData.players.length;
+    myPosition = position;
     statusEl.className = 'status success';
     statusEl.innerHTML = `✅ Вы ${getPositionText(position)}! Ждите вызова.<div class="position-badge">#${position}</div>`;
     
   } catch (error) {
+    console.error(error);
     statusEl.className = 'status error';
     statusEl.innerHTML = `❌ Ошибка: ${error.message}`;
     isPressed = false;
@@ -231,11 +267,11 @@ async function pressAnswer() {
   }
 }
 
-function getPositionText(position) {
-  if (position === 1) return 'первый';
-  if (position === 2) return 'второй';
-  if (position === 3) return 'третий';
-  return `${position}-й`;
+function getPositionText(pos) {
+  if (pos === 1) return 'первый';
+  if (pos === 2) return 'второй';
+  if (pos === 3) return 'третий';
+  return `${pos}-й`;
 }
 </script>
 
